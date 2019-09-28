@@ -1,0 +1,13 @@
+[package]
+name = "prompt"
+version = "0.1.0"
+authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
+edition = "2018"
+publish = false
+
+[dependencies]
+chrono = "0.4"
+colored = "1.8"
+git2 = "0.10"
+structopt = "0.3"
+whoami = "0.5"
