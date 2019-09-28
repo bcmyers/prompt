@@ -1,3 +1,5 @@
+#![cfg(target_family = "unix")]
+
 mod git;
 
 use std::env;
