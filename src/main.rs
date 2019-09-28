@@ -10,18 +10,50 @@ use structopt::StructOpt;
 
 #[derive(StructOpt)]
 struct Opt {
-    /// Flag indicating that previous command failed
-    #[structopt(long = "failure")]
-    failure: bool,
+    /// Background color
+    #[structopt(short = "c", long = "color", default_value = "blue", possible_values = &[
+        "black",
+        "red",
+        "green",
+        "yellow",
+        "blue",
+        "magenta",
+        "cyan",
+        "white",
+        "bright black",
+        "bright red",
+        "bright green",
+        "bright yellow",
+        "bright blue",
+        "bright magenta",
+        "bright cyan",
+        "bright white",
+    ])]
+    color: String,
 }
 
 fn main() {
     let opt = Opt::from_args();
 
-    let (bg_color, fg_color) = if opt.failure {
-        ("red", "white")
-    } else {
-        ("blue", "white")
+    let bg_color = opt.color;
+    let fg_color = match bg_color.as_ref() {
+        "black" => "white",
+        "red" => "white",
+        "green" => "black",
+        "yellow" => "black",
+        "blue" => "white",
+        "magenta" => "white",
+        "cyan" => "white",
+        "white" => "black",
+        "bright black" => "bright white",
+        "bright red" => "bright white",
+        "bright green" => "right black",
+        "bright yellow" => "bright black",
+        "bright blue" => "bright white",
+        "bright magenta" => "bright white",
+        "bright cyan" => "bright white",
+        "bright white" => "bright black",
+        _ => unreachable!(),
     };
 
     let username = whoami::username();
