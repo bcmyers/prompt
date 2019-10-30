@@ -3,8 +3,6 @@
 mod git;
 
 use std::env;
-use std::ffi::OsStr;
-use std::path::Component;
 
 use chrono::Local;
 use colored::Colorize;
@@ -65,7 +63,7 @@ fn main() {
         Local::now().format("%H:%M"),
         &username,
         whoami::hostname(),
-        current_dir(&username),
+        current_dir(),
     )
     .bold()
     .color(fg_color)
@@ -77,31 +75,25 @@ fn main() {
     }
 }
 
-fn current_dir(username: &str) -> String {
+fn current_dir() -> String {
     let dir = env::current_dir().unwrap();
+    let mut output = dir.into_os_string().into_string().unwrap();
 
-    let mut iter = dir.components();
-    if let Some(component) = iter.next() {
-        if component == Component::RootDir {
-            if let Some(component) = iter.next() {
-                if component == Component::Normal(OsStr::new("home")) {
-                    if let Some(component) = iter.next() {
-                        if component == Component::Normal(OsStr::new(username)) {
-                            let mut output = String::from("~");
-                            let rest = iter.as_path().as_os_str().to_str().unwrap();
-                            if rest == "" {
-                                return output;
-                            } else {
-                                output.push('/');
-                                output.push_str(rest);
-                                return output;
-                            }
-                        }
-                    }
-                }
-            }
+    let f = || {
+        let home = dirs_sys::home_dir()?
+            .canonicalize()
+            .ok()?
+            .into_os_string()
+            .into_string()
+            .ok()?;
+        Some(home)
+    };
+
+    if let Some(home) = f() {
+        if output.starts_with(&home) {
+            output = output.replacen(&home, "~", 1);
         }
     }
 
-    dir.into_os_string().into_string().unwrap()
+    output
 }
