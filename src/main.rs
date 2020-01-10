@@ -40,7 +40,7 @@ fn main() {
         "black" => "white",
         "red" => "white",
         "green" => "black",
-        "yellow" => "black",
+        "yellow" => "white",
         "blue" => "white",
         "magenta" => "white",
         "cyan" => "white",
