@@ -69,6 +69,8 @@ fn main() {
     .color(fg_color)
     .on_color(bg_color);
 
+    colored::control::set_override(true);
+
     match git::git() {
         Some(t) => println!("{} {}", s, t),
         None => println!("{}", s),
