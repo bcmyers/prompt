@@ -3,6 +3,7 @@
 mod git;
 
 use std::env;
+use std::path::Path;
 
 use chrono::Local;
 use colored::Colorize;
@@ -71,10 +72,18 @@ fn main() {
 
     colored::control::set_override(true);
 
-    match git::git() {
-        Some(t) => println!("{} {}", s, t),
-        None => println!("{}", s),
+    match (git::git(), virtual_env()) {
+        (Some(t), Some(u)) => println!("{} {} {}", s, t, u),
+        (Some(t), None) => println!("{} {}", s, t),
+        (None, Some(u)) => println!("{} {}", s, u),
+        _ => println!("{}", s),
     }
+}
+
+fn virtual_env() -> Option<String> {
+    let var = env::var("VIRTUAL_ENV").ok()?;
+    let env = Path::new(&var).file_name()?.to_str()?;
+    Some(format!("({})", env))
 }
 
 fn current_dir() -> String {
