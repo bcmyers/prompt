@@ -1,6 +1,7 @@
 #![cfg(target_family = "unix")]
 
 mod git;
+mod k8;
 
 use std::env;
 use std::path::Path;
@@ -36,7 +37,32 @@ struct Opt {
 fn main() {
     let opt = Opt::from_args();
 
-    let bg_color = opt.color;
+    colored::control::set_override(true);
+
+    let mut s = match virtual_env() {
+        Some(mut ve) => {
+            ve.push(' ');
+            ve
+        }
+        None => String::new(),
+    };
+
+    s.push_str(&base(&opt.color));
+
+    if let Some(ref g) = git::git() {
+        s.push(' ');
+        s.push_str(g);
+    }
+
+    if let Some(ref k) = k8::k8() {
+        s.push(' ');
+        s.push_str(k);
+    }
+
+    println!("{}", s);
+}
+
+fn base(bg_color: &str) -> String {
     let fg_color = match bg_color.as_ref() {
         "black" => "white",
         "red" => "white",
@@ -56,34 +82,17 @@ fn main() {
         "bright white" => "bright black",
         _ => unreachable!(),
     };
-
-    let username = whoami::username();
-
-    let s = format!(
+    format!(
         " {} {}@{} {} ",
         Local::now().format("%H:%M"),
-        &username,
+        &whoami::username(),
         whoami::hostname(),
         current_dir(),
     )
     .bold()
     .color(fg_color)
-    .on_color(bg_color);
-
-    colored::control::set_override(true);
-
-    match (git::git(), virtual_env()) {
-        (Some(t), Some(u)) => println!("{} {} {}", s, t, u),
-        (Some(t), None) => println!("{} {}", s, t),
-        (None, Some(u)) => println!("{} {}", s, u),
-        _ => println!("{}", s),
-    }
-}
-
-fn virtual_env() -> Option<String> {
-    let var = env::var("VIRTUAL_ENV").ok()?;
-    let env = Path::new(&var).file_name()?.to_str()?;
-    Some(format!("({})", env))
+    .on_color(bg_color)
+    .to_string()
 }
 
 fn current_dir() -> String {
@@ -107,4 +116,10 @@ fn current_dir() -> String {
     }
 
     output
+}
+
+fn virtual_env() -> Option<String> {
+    let var = env::var("VIRTUAL_ENV").ok()?;
+    let env = Path::new(&var).file_name()?.to_str()?;
+    Some(format!("({})", env))
 }

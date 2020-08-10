@@ -1,7 +1,7 @@
 use colored::Colorize;
 
 pub(crate) fn git() -> Option<String> {
-    let repo: Repository = git2::Repository::open(".").ok()?.into();
+    let repo: Repository = git2::Repository::discover(".").ok()?.into();
 
     let mut output = match repo.head() {
         Some(head) => match head.shorthand() {
@@ -20,15 +20,15 @@ pub(crate) fn git() -> Option<String> {
         output.push_str(hash);
     }
 
-    if let Some(ref status) = repo.status() {
-        output.push(' ');
-        output.push_str(status);
-    }
+    // if let Some(ref status) = repo.status() {
+    //     output.push(' ');
+    //     output.push_str(status);
+    // }
 
-    if let Some(ref state) = repo.state() {
-        output.push(' ');
-        output.push_str(state);
-    }
+    // if let Some(ref state) = repo.state() {
+    //     output.push(' ');
+    //     output.push_str(state);
+    // }
 
     Some(colorize(output))
 }
@@ -54,13 +54,7 @@ impl From<git2::Repository> for Repository {
 
 impl Repository {
     fn hash(&self) -> Option<String> {
-        let s = self
-            .head()?
-            .target()?
-            .to_string()
-            .chars()
-            .take(13)
-            .collect();
+        let s = self.head()?.target()?.to_string().chars().take(7).collect();
         Some(s)
     }
 
@@ -68,6 +62,7 @@ impl Repository {
         self.0.head().ok()
     }
 
+    #[allow(dead_code)]
     fn state(&self) -> Option<&'static str> {
         use git2::RepositoryState::*;
         match self.0.state() {
@@ -86,6 +81,7 @@ impl Repository {
         }
     }
 
+    #[allow(dead_code)]
     fn status(&self) -> Option<String> {
         let mut output = String::new();
         let mut seen = Vec::new();
