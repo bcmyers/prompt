@@ -7,6 +7,10 @@ Small tool that creates a customized bash prompt with:
 * Git info, i.e. `branch@hash`
 * Kubernetes info, i.e. `context@namespace`
 
+## Requirements
+
+[rust](https://www.rust-lang.org/tools/install)
+
 ## Installation
 
 ```bash
