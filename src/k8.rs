@@ -20,7 +20,10 @@ pub(crate) fn k8() -> Option<String> {
     let k = serde_json::from_slice::<K>(&output.stdout).ok()?;
     let output = Output::try_from(k).ok()?;
 
-    let s = format!("{}@{}", output.namespace, output.context);
+    let s = match output.namespace {
+        Some(ns) => format!("{}@{}", ns, output.context),
+        None => output.context,
+    };
     Some(colorize(s))
 }
 
@@ -52,7 +55,7 @@ struct KContext {
 #[derive(Clone, Debug, Deserialize)]
 struct KInner {
     cluster: String,
-    namespace: String,
+    namespace: Option<String>,
     user: String,
 }
 
@@ -60,7 +63,7 @@ struct KInner {
 struct Output {
     cluster: String,
     context: String,
-    namespace: String,
+    namespace: Option<String>,
     user: String,
 }
 
