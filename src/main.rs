@@ -39,12 +39,18 @@ fn main() {
 
     colored::control::set_override(true);
 
-    let mut s = match virtual_env() {
-        Some(mut ve) => {
-            ve.push(' ');
-            ve
+    let mut s = String::new();
+
+    if let Some(ref k) = k8::k8() {
+        s.push_str(k);
+        s.push('\n');
+    }
+
+    match virtual_env() {
+        Some(ve) => {
+            s.push_str(&format!(" venv:      {}\n", ve));
         }
-        None => String::new(),
+        None => (),
     };
 
     s.push_str(&base(&opt.color));
@@ -52,11 +58,6 @@ fn main() {
     if let Some(ref g) = git::git() {
         s.push(' ');
         s.push_str(g);
-    }
-
-    if let Some(ref k) = k8::k8() {
-        s.push(' ');
-        s.push_str(k);
     }
 
     println!("{}", s);
@@ -121,5 +122,5 @@ fn current_dir() -> String {
 fn virtual_env() -> Option<String> {
     let var = env::var("VIRTUAL_ENV").ok()?;
     let env = Path::new(&var).file_name()?.to_str()?;
-    Some(format!("({})", env))
+    Some(format!("{}", env))
 }

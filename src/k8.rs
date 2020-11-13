@@ -2,7 +2,7 @@ use std::convert::TryFrom;
 use std::process::Command;
 
 use anyhow::anyhow;
-use colored::Colorize;
+// use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
 pub(crate) fn k8() -> Option<String> {
@@ -19,24 +19,26 @@ pub(crate) fn k8() -> Option<String> {
 
     let k = serde_json::from_slice::<K>(&output.stdout).ok()?;
     let output = Output::try_from(k).ok()?;
+    let ns = output.namespace?;
 
-    let s = match output.namespace {
-        Some(ns) => format!("{}@{}", ns, output.context),
-        None => output.context,
-    };
-    Some(colorize(s))
+    let mut s = String::new();
+    s.push_str(&format!(" cluster:   {}\n", output.cluster));
+    s.push_str(&format!(" context:   {}\n", ns));
+    s.push_str(&format!(" namespace: {}", ns));
+
+    Some(s)
 }
 
-fn colorize<S>(s: S) -> String
-where
-    S: AsRef<str>,
-{
-    format!(" {} ", s.as_ref())
-        .bold()
-        .color("black")
-        .on_color("white")
-        .to_string()
-}
+// fn colorize<S>(s: S) -> String
+// where
+//     S: AsRef<str>,
+// {
+//     format!(" {} ", s.as_ref())
+//         .bold()
+//         .color("bright white")
+//         .on_color("bright blue")
+//         .to_string()
+// }
 
 #[derive(Clone, Debug, Deserialize)]
 struct K {
