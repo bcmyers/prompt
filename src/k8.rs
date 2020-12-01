@@ -19,13 +19,10 @@ pub(crate) fn k8() -> Option<String> {
 
     let k = serde_json::from_slice::<K>(&output.stdout).ok()?;
     let output = Output::try_from(k).ok()?;
-    let ns = output.namespace?;
 
     let mut s = String::new();
-    s.push_str(&format!(" cluster:   {}\n", output.cluster));
-    s.push_str(&format!(" context:   {}\n", ns));
-    s.push_str(&format!(" namespace: {}", ns));
-
+    s.push_str(&format!(" k8s-context:   {}\n", output.context));
+    s.push_str(&format!(" k8s-namespace: {}", output.namespace?));
     Some(s)
 }
 
@@ -51,7 +48,7 @@ struct K {
 struct KContext {
     name: String,
     #[serde(rename = "context")]
-    inner: KInner,
+    context: KInner,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -63,27 +60,23 @@ struct KInner {
 
 #[derive(Clone, Debug, Serialize)]
 struct Output {
-    cluster: String,
     context: String,
     namespace: Option<String>,
-    user: String,
 }
 
 impl TryFrom<K> for Output {
     type Error = anyhow::Error;
 
     fn try_from(k: K) -> Result<Self, Self::Error> {
-        let current = k.current_context;
+        let current_context = &k.current_context;
         let context = k
             .contexts
             .into_iter()
-            .find(|item| &item.name == &current)
+            .find(|item| &item.name == current_context)
             .ok_or_else(|| anyhow!("Missing current context details"))?;
         Ok(Self {
-            context: current,
-            cluster: context.inner.cluster,
-            namespace: context.inner.namespace,
-            user: context.inner.user,
+            context: context.name,
+            namespace: context.context.namespace,
         })
     }
 }
