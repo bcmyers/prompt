@@ -35,16 +35,16 @@ struct Opt {
 }
 
 fn main() {
-    let opt = Opt::from_args();
+    let Opt { color } = Opt::from_args();
 
     colored::control::set_override(true);
 
     let mut s = String::new();
 
-    if let Some(ref k) = k8::k8() {
-        s.push_str(k);
-        s.push('\n');
-    }
+    // if let Some(ref k) = k8::k8() {
+    //     s.push_str(k);
+    //     s.push('\n');
+    // }
 
     match virtual_env() {
         Some(ve) => {
@@ -53,7 +53,7 @@ fn main() {
         None => (),
     };
 
-    s.push_str(&base(&opt.color));
+    s.push_str(&base(&color));
 
     if let Some(ref g) = git::git() {
         s.push(' ');
@@ -84,11 +84,11 @@ fn base(bg_color: &str) -> String {
         _ => unreachable!(),
     };
     format!(
-        " {} {}@{} {} ",
-        Local::now().format("%H:%M"),
-        &whoami::username(),
-        whoami::hostname(),
-        current_dir(),
+        " {time} {username}@{hostname} {cwd} ",
+        time = Local::now().format("%H:%M"),
+        username = &whoami::username(),
+        hostname = whoami::hostname(),
+        cwd = current_dir(),
     )
     .bold()
     .color(fg_color)
